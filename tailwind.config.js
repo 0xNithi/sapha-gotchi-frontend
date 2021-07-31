@@ -7,12 +7,7 @@ module.exports = {
         egg: '50%/60% 60% 40% 40%',
       },
       boxShadow: {
-        egg: '12px 16px 12px 12px rgba(238, 203, 62, 0.9)',
-      },
-      colors: {
-        yellow: {
-          250: '#FDE66C',
-        },
+        egg: '12px 16px 12px 12px rgba(0, 0, 0, 0.05)',
       },
       inset: {
         '1/6': '16.666666%',
