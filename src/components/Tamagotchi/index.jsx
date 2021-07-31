@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { utils } from 'ethers';
-import { useEthers, useContractCall, shortenAddress } from '@usedapp/core';
+import { utils, Contract } from 'ethers';
+import { useEthers, useContractCall, useContractFunction, shortenAddress } from '@usedapp/core';
+import IPFS from 'ipfs-core';
 
 import GotchiNFTAbi from '../../abis/GotchiNFT.json';
 import Crack from './Crack';
 
 const gotchiNFTInterface = new utils.Interface(GotchiNFTAbi);
 
-const address = '0xda16fB20C18d697c60394cE1C4375525a6EfAfe7';
+const address = '0x38A656369d17482083Bc80946171263BaCB5AD3e';
 
 const state = {
   GAME: 0,
@@ -19,10 +20,13 @@ const state = {
 const people = ['×', 'prawit', 'prayut', 'anutin'];
 
 const Tamagotchi = () => {
-  const { activateBrowserWallet, account } = useEthers();
+  const { activateBrowserWallet, library, account } = useEthers();
   const [gameState, setGameState] = useState(state.GAME);
   const [gotchiSize, setGotchiSize] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(1);
+
+  const gotchiNFTContract = new Contract(address, gotchiNFTInterface, library?.getSigner());
+  const propose = useContractFunction(gotchiNFTContract, 'propose');
 
   const balance = useContractCall({
     abi: gotchiNFTInterface,
@@ -119,7 +123,8 @@ const Tamagotchi = () => {
         <button
           type="button"
           className="w-8 h-8 mt-2 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
             if (gameState === state.LISTGOTCHI) {
               if (currentIndex === 0) {
                 setGameState(state.GAME);
@@ -134,10 +139,19 @@ const Tamagotchi = () => {
                 input.className = 'hidden';
                 input.setAttribute('type', 'file');
                 document.body.appendChild(input);
-                input.addEventListener('change', () => {
-                  // Upload file to ipfs
-                  input.remove();
-                });
+                propose.send(
+                  utils.parseUnits((currentIndex - 1).toString(), 0),
+                  `https://ipfs.infura.io/ipfs/QmYMNCRMSZTUb3sn62A9ZaJpEZyzSzWe7AozuPgCoSUxYD`,
+                );
+
+                // input.addEventListener('change', async () => {
+                //   const node = await IPFS.create();
+                //   const results = await node.add(input.files);
+                //   const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
+                //   console.log(imagesUri)
+                //   // propose.send(utils.parseUnits((currentIndex - 1).toString(), 0), imagesUri);
+                //   // input.remove();
+                // });
                 input.click();
               }
             } else if (gameState === state.SHOWSTAT) {
