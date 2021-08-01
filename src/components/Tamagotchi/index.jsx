@@ -20,12 +20,14 @@ const state = {
 
 const people = ['×', 'prawit', 'prayut', 'anutin'];
 
+const rarity = ['common', 'rare', 'epic'];
+
 const Tamagotchi = () => {
   const { activateBrowserWallet, library, account } = useEthers();
   const [gameState, setGameState] = useState(state.GAME);
   const [gotchiSize, setGotchiSize] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(1);
-  const [gotchiId, setGotchiId] = useState(undefined);
+  const [gotchiStat, setGotchiStat] = useState(undefined);
   const [gotchiUri, setGotchiUri] = useState(undefined);
 
   const gotchiNFTContract = new Contract(address, gotchiNFTInterface, library?.getSigner());
@@ -73,7 +75,7 @@ const Tamagotchi = () => {
   };
 
   const handleInjectGotchi = (id) => {
-    gotchiNFTContract.connect(library?.getSigner()).inject(id);
+    gotchiNFTContract.connect(library?.getSigner()).inject(id, { gasLimit: 446044 });
   };
 
   useEffect(() => {
@@ -97,6 +99,11 @@ const Tamagotchi = () => {
       }
     }
   }, [currentIndex, gotchiSize, gameState]);
+
+  useEffect(() => {
+    // gotchiStat?.id && setGotchiStat(gotchiInfo.find((gotchi) => gotchi?.id === gotchiStat?.id));
+    console.log(gotchiInfo, gotchiStat);
+  }, [gotchiInfo]);
 
   return (
     <div className="w-80 h-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-300 rounded-egg shadow-2xl select-none overflow-hidden">
@@ -125,11 +132,11 @@ const Tamagotchi = () => {
             )}
           </div>
           <div className="w-full h-full flex justify-center items-center">
-            {account && gotchiUri && (
+            {account && gameState === state.GAME && gotchiUri && (
               <img src={gotchiUri} alt="character" className="w-20 h-20 object-cover filter grayscale animate-walk" />
             )}
             {account && gameState !== state.GAME && (
-              <div className="w-10/12 h-1/2 absolute flex justify-center items-center text-3xl bg-gray-300 rounded">
+              <div className="w-10/12 h-1/2 absolute flex flex-col justify-center items-center text-3xl bg-gray-300 rounded">
                 {gameState === state.LISTGOTCHI && (
                   <>
                     {currentIndex === 0 && '×'}
@@ -141,6 +148,22 @@ const Tamagotchi = () => {
                 )}
                 {gameState === state.ADDGOTCHI && (
                   <>{people[Math.abs(currentIndex % people.length)].toLocaleUpperCase()}</>
+                )}
+                {gameState === state.SHOWSTAT && (
+                  <>
+                    <div className="w-10/12 flex flex-row justify-between text-xs">
+                      <div>Power: </div>
+                      <div>{gotchiStat?.power.toString()}</div>
+                    </div>
+                    <div className="w-10/12 flex flex-row justify-between text-xs">
+                      <div>Sinovac taked:</div>
+                      <div>{gotchiStat?.sinovacTaked.toString()}</div>
+                    </div>
+                    <div className="w-10/12 flex flex-row justify-between text-xs mt-4">
+                      <div>Rarity:</div>
+                      <div>{rarity[gotchiStat?.rarity]}</div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -168,14 +191,14 @@ const Tamagotchi = () => {
           className="w-8 h-8 mt-2 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
           onClick={() => {
             if (gameState === state.GAME) {
-              handleInjectGotchi(gotchiId);
+              handleInjectGotchi(gotchiStat?.id);
             } else if (gameState === state.LISTGOTCHI) {
               if (currentIndex === 0) {
                 setGameState(state.GAME);
               } else if (currentIndex === 1) {
                 setGameState(state.ADDGOTCHI);
               } else {
-                setGotchiId(gotchiInfo[currentIndex - 2]?.id);
+                setGotchiStat(gotchiInfo[currentIndex - 2]);
                 setGameState(state.GAME);
               }
             } else if (gameState === state.ADDGOTCHI) {
