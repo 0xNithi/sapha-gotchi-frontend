@@ -83,6 +83,8 @@ const Tamagotchi = () => {
     gotchiNFTContract.connect(library?.getSigner()).inject(id, { gasLimit: 446044 });
   };
 
+  const stat = gotchiStat && gotchiInfo?.find((gotchi) => gotchi?.id.eq(gotchiStat.id));
+
   useEffect(() => {
     gotchiInfo && setGotchiSize(gotchiInfo.length + 1);
   }, [gotchiInfo]);
@@ -104,11 +106,6 @@ const Tamagotchi = () => {
       }
     }
   }, [currentIndex, gotchiSize, gameState]);
-
-  // useEffect(() => {
-  //   // gotchiStat?.id && setGotchiStat(gotchiInfo.find((gotchi) => gotchi?.id.eq(gotchiStat?.id)));
-  //   console.table(gotchiStat?.id && gotchiInfo.find((gotchi) => gotchi?.id.eq(gotchiStat?.id)));
-  // }, [gotchiInfo]);
 
   return (
     <div>
@@ -170,15 +167,15 @@ const Tamagotchi = () => {
                     <>
                       <div className="w-10/12 flex flex-row justify-between text-xs">
                         <div>Power: </div>
-                        <div>{gotchiStat?.power.toString()}</div>
+                        <div>{stat?.power.toString()}</div>
                       </div>
                       <div className="w-10/12 flex flex-row justify-between text-xs">
                         <div>Sinovac taked:</div>
-                        <div>{gotchiStat?.sinovacTaked.toString()}</div>
+                        <div>{stat?.sinovacTaked.toString()}</div>
                       </div>
                       <div className="w-10/12 flex flex-row justify-between text-xs mt-4">
                         <div>Rarity:</div>
-                        <div>{rarity[gotchiStat?.rarity]}</div>
+                        <div>{rarity[stat?.rarity]}</div>
                       </div>
                     </>
                   )}
@@ -225,6 +222,7 @@ const Tamagotchi = () => {
                   const input = document.createElement('INPUT');
                   input.className = 'hidden';
                   input.setAttribute('type', 'file');
+                  input.setAttribute('accept', 'image/*');
                   document.body.appendChild(input);
 
                   input.addEventListener('change', async () => {
@@ -234,8 +232,10 @@ const Tamagotchi = () => {
                       const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
                       handleProposeGotchi((currentIndex - 1).toString(), imagesUri);
                     } catch (error) {
+                      console.log(error);
                       alert('ใช้รูปซ้ำไม่ได้นะจ๊ะ');
                     }
+                    setGameState(state.LISTGOTCHI);
                     input.remove();
                   });
                   input.click();
