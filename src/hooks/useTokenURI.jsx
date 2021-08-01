@@ -1,4 +1,3 @@
-import React from 'react';
 import { utils } from 'ethers';
 import { useContractCall } from '@usedapp/core';
 

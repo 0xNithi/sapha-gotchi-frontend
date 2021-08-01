@@ -66,7 +66,7 @@ const Tamagotchi = () => {
         args: [tokenId[i][0]],
       });
   }
-  // [[mintingStatus, rarity, untilAbleToInject, sinovacTaked, power]]
+
   const gotchiInfo = useContractCalls(gotchiInfoCalls)
     .map((gotchi, index) => {
       return gotchi && { ...gotchi[0], id: tokenId[index][0] };
@@ -84,8 +84,8 @@ const Tamagotchi = () => {
   };
 
   useEffect(() => {
-    balance && setGotchiSize(gotchiInfo.length + 1);
-  }, [balance]);
+    gotchiInfo && setGotchiSize(gotchiInfo.length + 1);
+  }, [gotchiInfo]);
 
   useEffect(() => {
     gameState !== state.GAME && setCurrentIndex(1);
