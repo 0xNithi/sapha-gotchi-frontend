@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { utils, Contract } from 'ethers';
-import { useEthers, useContractCall, useContractFunction, shortenAddress } from '@usedapp/core';
+import { useEthers, useContractCall, shortenAddress } from '@usedapp/core';
 import IPFS from 'ipfs-core';
 
 import GotchiNFTAbi from '../../abis/GotchiNFT.json';
@@ -26,7 +26,9 @@ const Tamagotchi = () => {
   const [currentIndex, setCurrentIndex] = useState(1);
 
   const gotchiNFTContract = new Contract(address, gotchiNFTInterface, library?.getSigner());
-  const propose = useContractFunction(gotchiNFTContract, 'propose');
+
+  //! Fuck you!
+  // const propose = useContractFunction(gotchiNFTContract, 'propose');
 
   const balance = useContractCall({
     abi: gotchiNFTInterface,
@@ -36,6 +38,7 @@ const Tamagotchi = () => {
   });
 
   useEffect(() => {
+    console.log(balance);
     balance && setGotchiSize(parseInt(balance[0]) + 1);
   }, [balance]);
 
@@ -53,6 +56,12 @@ const Tamagotchi = () => {
     }
   }, [currentIndex, gotchiSize, gameState]);
 
+  const handleProposeGotchi = (role, ipfsEndpoint) => {
+    gotchiNFTContract.connect(library?.getSigner()).propose(role, ipfsEndpoint);
+  };
+  const handleInjectGotchi = (id) => {
+    gotchiNFTContract.connect(library?.getSigner()).inject(id);
+  };
   return (
     <div className="w-80 h-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-300 rounded-egg shadow-2xl select-none overflow-hidden">
       {/* Egg Shadow */}
@@ -139,19 +148,18 @@ const Tamagotchi = () => {
                 input.className = 'hidden';
                 input.setAttribute('type', 'file');
                 document.body.appendChild(input);
-                propose.send(
-                  utils.parseUnits((currentIndex - 1).toString(), 0),
-                  `https://ipfs.infura.io/ipfs/QmYMNCRMSZTUb3sn62A9ZaJpEZyzSzWe7AozuPgCoSUxYD`,
-                );
 
-                // input.addEventListener('change', async () => {
-                //   const node = await IPFS.create();
-                //   const results = await node.add(input.files);
-                //   const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
-                //   console.log(imagesUri)
-                //   // propose.send(utils.parseUnits((currentIndex - 1).toString(), 0), imagesUri);
-                //   // input.remove();
-                // });
+                input.addEventListener('change', async () => {
+                  try {
+                    const node = await IPFS.create();
+                    const results = await node.add(input.files);
+                    const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
+                    handleProposeGotchi((currentIndex - 1).toString(), imagesUri);
+                  } catch (error) {
+                    alert('ใช้รูปซ้ำไม่ได้นะจ๊ะ');
+                  }
+                  input.remove();
+                });
                 input.click();
               }
             } else if (gameState === state.SHOWSTAT) {
