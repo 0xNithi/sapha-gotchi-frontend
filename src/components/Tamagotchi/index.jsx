@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { utils, Contract } from 'ethers';
-import { useEthers, useContractCall, shortenAddress } from '@usedapp/core';
+import { useEthers, useContractCall, useContractCalls, shortenAddress } from '@usedapp/core';
 import IPFS from 'ipfs-core';
 
+import useTokenURI from '../../hooks/useTokenURI';
 import GotchiNFTAbi from '../../abis/GotchiNFT.json';
 import Crack from './Crack';
 
@@ -24,11 +25,10 @@ const Tamagotchi = () => {
   const [gameState, setGameState] = useState(state.GAME);
   const [gotchiSize, setGotchiSize] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(1);
+  const [gotchiId, setGotchiId] = useState(undefined);
+  const [gotchiUri, setGotchiUri] = useState(undefined);
 
   const gotchiNFTContract = new Contract(address, gotchiNFTInterface, library?.getSigner());
-
-  //! Fuck you!
-  // const propose = useContractFunction(gotchiNFTContract, 'propose');
 
   const balance = useContractCall({
     abi: gotchiNFTInterface,
@@ -37,14 +37,56 @@ const Tamagotchi = () => {
     args: [account],
   });
 
+  let tokenIdCalls = [];
+  for (let i = 0; balance && i < balance[0]; i++) {
+    tokenIdCalls.push({
+      abi: gotchiNFTInterface,
+      address: address,
+      method: 'tokenOfOwnerByIndex',
+      args: [account, i],
+    });
+  }
+
+  const tokenId = useContractCalls(tokenIdCalls);
+
+  let gotchiInfoCalls = [];
+  for (let i = 0; tokenId && i < tokenId.length; i++) {
+    tokenId[i] &&
+      gotchiInfoCalls.push({
+        abi: gotchiNFTInterface,
+        address: address,
+        method: 'getGotchiInfo',
+        args: [tokenId[i][0]],
+      });
+  }
+  // [[mintingStatus, rarity, untilAbleToInject, sinovacTaked, power]]
+  const gotchiInfo = useContractCalls(gotchiInfoCalls)
+    .map((gotchi, index) => {
+      return gotchi && { ...gotchi[0], id: tokenId[index][0] };
+    })
+    .filter((gotchi) => gotchi !== undefined && !!gotchi[0]);
+
+  const tokenURI = useTokenURI(gotchiInfo[currentIndex - 2]?.id);
+
+  const handleProposeGotchi = (role, ipfsEndpoint) => {
+    gotchiNFTContract.connect(library?.getSigner()).propose(role, ipfsEndpoint, { gasLimit: 446044 });
+  };
+
+  const handleInjectGotchi = (id) => {
+    gotchiNFTContract.connect(library?.getSigner()).inject(id);
+  };
+
   useEffect(() => {
-    console.log(balance);
-    balance && setGotchiSize(parseInt(balance[0]) + 1);
+    balance && setGotchiSize(gotchiInfo.length + 1);
   }, [balance]);
 
   useEffect(() => {
     gameState !== state.GAME && setCurrentIndex(1);
   }, [gameState]);
+
+  useEffect(() => {
+    tokenURI && setGotchiUri(tokenURI[0]);
+  }, [tokenURI]);
 
   useEffect(() => {
     if (gameState === state.LISTGOTCHI) {
@@ -56,12 +98,6 @@ const Tamagotchi = () => {
     }
   }, [currentIndex, gotchiSize, gameState]);
 
-  const handleProposeGotchi = (role, ipfsEndpoint) => {
-    gotchiNFTContract.connect(library?.getSigner()).propose(role, ipfsEndpoint);
-  };
-  const handleInjectGotchi = (id) => {
-    gotchiNFTContract.connect(library?.getSigner()).inject(id);
-  };
   return (
     <div className="w-80 h-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-300 rounded-egg shadow-2xl select-none overflow-hidden">
       {/* Egg Shadow */}
@@ -89,12 +125,8 @@ const Tamagotchi = () => {
             )}
           </div>
           <div className="w-full h-full flex justify-center items-center">
-            {account && (
-              <img
-                src="/images/kfc.jpg"
-                alt="character"
-                className="w-20 h-20 object-cover filter grayscale animate-walk"
-              />
+            {account && gotchiUri && (
+              <img src={gotchiUri} alt="character" className="w-20 h-20 object-cover filter grayscale animate-walk" />
             )}
             {account && gameState !== state.GAME && (
               <div className="w-10/12 h-1/2 absolute flex justify-center items-center text-3xl bg-gray-300 rounded">
@@ -102,8 +134,8 @@ const Tamagotchi = () => {
                   <>
                     {currentIndex === 0 && '×'}
                     {currentIndex === 1 && '+'}
-                    {currentIndex !== 0 && currentIndex !== 1 && (
-                      <img src="/images/kfc.jpg" alt="character" className="w-16 h-16 object-cover filter grayscale" />
+                    {currentIndex !== 0 && currentIndex !== 1 && tokenURI && (
+                      <img src={tokenURI[0]} alt="character" className="w-16 h-16 object-cover filter grayscale" />
                     )}
                   </>
                 )}
@@ -122,6 +154,8 @@ const Tamagotchi = () => {
           onClick={() => {
             if (gameState === state.GAME) {
               setGameState(state.LISTGOTCHI);
+            } else if (gameState === state.SHOWSTAT) {
+              setGameState(state.GAME);
             } else {
               setCurrentIndex(currentIndex - 1);
             }
@@ -132,13 +166,17 @@ const Tamagotchi = () => {
         <button
           type="button"
           className="w-8 h-8 mt-2 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
-          onClick={(e) => {
-            e.preventDefault();
-            if (gameState === state.LISTGOTCHI) {
+          onClick={() => {
+            if (gameState === state.GAME) {
+              handleInjectGotchi(gotchiId);
+            } else if (gameState === state.LISTGOTCHI) {
               if (currentIndex === 0) {
                 setGameState(state.GAME);
               } else if (currentIndex === 1) {
                 setGameState(state.ADDGOTCHI);
+              } else {
+                setGotchiId(gotchiInfo[currentIndex - 2]?.id);
+                setGameState(state.GAME);
               }
             } else if (gameState === state.ADDGOTCHI) {
               if (Math.abs(currentIndex % people.length) === 0) {
@@ -175,6 +213,8 @@ const Tamagotchi = () => {
           onClick={() => {
             if (gameState === state.GAME) {
               setGameState(state.SHOWSTAT);
+            } else if (gameState === state.SHOWSTAT) {
+              setGameState(state.GAME);
             } else {
               setCurrentIndex(currentIndex + 1);
             }
