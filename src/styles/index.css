@@ -6,4 +6,8 @@
   * {
     font-family: 'Chonburi';
   }
+
+  body {
+    @apply bg-gray-100;
+  }
 }

@@ -19,6 +19,11 @@ const state = {
 };
 
 const people = ['×', 'prawit', 'prayut', 'anutin'];
+const eggColor = [
+  'bg-gradient-to-tl from-yellow-400 to-gray-100',
+  'bg-gradient-to-tl from-green-800 to-gray-300',
+  'bg-gradient-to-tl from-gray-800 to-gray-300',
+];
 
 const rarity = ['common', 'rare', 'epic'];
 
@@ -100,151 +105,164 @@ const Tamagotchi = () => {
     }
   }, [currentIndex, gotchiSize, gameState]);
 
-  useEffect(() => {
-    // gotchiStat?.id && setGotchiStat(gotchiInfo.find((gotchi) => gotchi?.id === gotchiStat?.id));
-    console.log(gotchiInfo, gotchiStat);
-  }, [gotchiInfo]);
+  // useEffect(() => {
+  //   // gotchiStat?.id && setGotchiStat(gotchiInfo.find((gotchi) => gotchi?.id.eq(gotchiStat?.id)));
+  //   console.table(gotchiStat?.id && gotchiInfo.find((gotchi) => gotchi?.id.eq(gotchiStat?.id)));
+  // }, [gotchiInfo]);
 
   return (
-    <div className="w-80 h-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-300 rounded-egg shadow-2xl select-none overflow-hidden">
-      {/* Egg Shadow */}
-      <div className="w-10/12 h-4/6 absolute top-1/6 left-1/12 filter blur-sm rounded-egg shadow-egg">
-        {/* Egg Highlight */}
-        <div className="w-6 h-16 absolute left-1/12 transform rotate-30 bg-yellow-200 rounded-egg" />
-      </div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <Crack />
-        {/* Screen */}
-        <div className="w-48 h-44 flex flex-col relative bg-gray-100 rounded-2xl shadow border-y-2">
-          <div className="h-16 flex justify-center items-center text-base text-center bg-gray-200">
-            {account ? (
-              shortenAddress(account)
-            ) : (
-              <button
-                type="button"
-                className="bg-gray-500 text-white font-bold p-1 rounded transform active:scale-95"
-                onClick={() => {
-                  activateBrowserWallet();
-                }}
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-          <div className="w-full h-full flex justify-center items-center">
-            {account && gameState === state.GAME && gotchiUri && (
-              <img src={gotchiUri} alt="character" className="w-20 h-20 object-cover filter grayscale animate-walk" />
-            )}
-            {account && gameState !== state.GAME && (
-              <div className="w-10/12 h-1/2 absolute flex flex-col justify-center items-center text-3xl bg-gray-300 rounded">
-                {gameState === state.LISTGOTCHI && (
-                  <>
-                    {currentIndex === 0 && '×'}
-                    {currentIndex === 1 && '+'}
-                    {currentIndex !== 0 && currentIndex !== 1 && tokenURI && (
-                      <img src={tokenURI[0]} alt="character" className="w-16 h-16 object-cover filter grayscale" />
-                    )}
-                  </>
-                )}
-                {gameState === state.ADDGOTCHI && (
-                  <>{people[Math.abs(currentIndex % people.length)].toLocaleUpperCase()}</>
-                )}
-                {gameState === state.SHOWSTAT && (
-                  <>
-                    <div className="w-10/12 flex flex-row justify-between text-xs">
-                      <div>Power: </div>
-                      <div>{gotchiStat?.power.toString()}</div>
-                    </div>
-                    <div className="w-10/12 flex flex-row justify-between text-xs">
-                      <div>Sinovac taked:</div>
-                      <div>{gotchiStat?.sinovacTaked.toString()}</div>
-                    </div>
-                    <div className="w-10/12 flex flex-row justify-between text-xs mt-4">
-                      <div>Rarity:</div>
-                      <div>{rarity[gotchiStat?.rarity]}</div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+    <div>
+      <div className="flex flex-row text-8xl justify-center mt-6 filter drop-shadow-xl">
+        <div className="bg-clip-text text-transparent bg-gradient-to-r from-red-700 via-red-200 to-blue-700">สภา</div>
+        <img src={'/images/tribune.png'} className="w-24" alt="" />
+        <div className="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-red-200 to-red-700">
+          ก๊อตจิ
         </div>
       </div>
-      <div className="w-full absolute bottom-6 flex justify-center space-x-4">
-        <button
-          type="button"
-          className="w-8 h-8 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
-          onClick={() => {
-            if (gameState === state.GAME) {
-              setGameState(state.LISTGOTCHI);
-            } else if (gameState === state.SHOWSTAT) {
-              setGameState(state.GAME);
-            } else {
-              setCurrentIndex(currentIndex - 1);
-            }
-          }}
-        >
-          {gameState === state.GAME ? '👶' : '👈'}
-        </button>
-        <button
-          type="button"
-          className="w-8 h-8 mt-2 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
-          onClick={() => {
-            if (gameState === state.GAME) {
-              handleInjectGotchi(gotchiStat?.id);
-            } else if (gameState === state.LISTGOTCHI) {
-              if (currentIndex === 0) {
-                setGameState(state.GAME);
-              } else if (currentIndex === 1) {
-                setGameState(state.ADDGOTCHI);
-              } else {
-                setGotchiStat(gotchiInfo[currentIndex - 2]);
-                setGameState(state.GAME);
-              }
-            } else if (gameState === state.ADDGOTCHI) {
-              if (Math.abs(currentIndex % people.length) === 0) {
+      <div
+        className={`w-80 h-96 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${
+          eggColor[gotchiStat?.rarity | 0]
+        } rounded-egg shadow-2xl select-none overflow-hidden`}
+      >
+        {/* Egg Shadow */}
+        <div className="w-10/12 h-4/6 absolute top-1/6 left-1/12 filter blur-sm rounded-egg shadow-egg">
+          {/* Egg Highlight */}
+          <div className="w-6 h-16 absolute left-1/12 transform rotate-30 bg-white opacity-40 rounded-egg" />
+        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <Crack />
+          {/* Screen */}
+          <div className="w-48 h-44 flex flex-col relative bg-gray-100 rounded-2xl shadow border-y-2">
+            <div className="h-16 flex justify-center items-center text-base text-center bg-gray-200">
+              {account ? (
+                shortenAddress(account)
+              ) : (
+                <button
+                  type="button"
+                  className="bg-gray-500 text-white font-bold p-1 rounded transform active:scale-95"
+                  onClick={() => {
+                    activateBrowserWallet();
+                  }}
+                >
+                  Connect Wallet
+                </button>
+              )}
+            </div>
+            <div className="w-full h-full flex justify-center items-center">
+              {account && gotchiUri && (
+                <img src={gotchiUri} alt="character" className="w-20 h-20 object-cover filter grayscale animate-walk" />
+              )}
+              {account && gameState !== state.GAME && (
+                <div className="w-10/12 h-1/2 absolute flex flex-col justify-center items-center text-3xl bg-gray-300 rounded">
+                  {gameState === state.LISTGOTCHI && (
+                    <>
+                      {currentIndex === 0 && '×'}
+                      {currentIndex === 1 && '+'}
+                      {currentIndex !== 0 && currentIndex !== 1 && tokenURI && (
+                        <img src={tokenURI[0]} alt="character" className="w-16 h-16 object-cover filter grayscale" />
+                      )}
+                    </>
+                  )}
+                  {gameState === state.ADDGOTCHI && (
+                    <>{people[Math.abs(currentIndex % people.length)].toLocaleUpperCase()}</>
+                  )}
+                  {gameState === state.SHOWSTAT && (
+                    <>
+                      <div className="w-10/12 flex flex-row justify-between text-xs">
+                        <div>Power: </div>
+                        <div>{gotchiStat?.power.toString()}</div>
+                      </div>
+                      <div className="w-10/12 flex flex-row justify-between text-xs">
+                        <div>Sinovac taked:</div>
+                        <div>{gotchiStat?.sinovacTaked.toString()}</div>
+                      </div>
+                      <div className="w-10/12 flex flex-row justify-between text-xs mt-4">
+                        <div>Rarity:</div>
+                        <div>{rarity[gotchiStat?.rarity]}</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="w-full absolute bottom-6 flex justify-center space-x-4">
+          <button
+            type="button"
+            className="w-8 h-8 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
+            onClick={() => {
+              if (gameState === state.GAME) {
                 setGameState(state.LISTGOTCHI);
+              } else if (gameState === state.SHOWSTAT) {
+                setGameState(state.GAME);
               } else {
-                const input = document.createElement('INPUT');
-                input.className = 'hidden';
-                input.setAttribute('type', 'file');
-                document.body.appendChild(input);
-
-                input.addEventListener('change', async () => {
-                  try {
-                    const node = await IPFS.create();
-                    const results = await node.add(input.files);
-                    const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
-                    handleProposeGotchi((currentIndex - 1).toString(), imagesUri);
-                  } catch (error) {
-                    alert('ใช้รูปซ้ำไม่ได้นะจ๊ะ');
-                  }
-                  input.remove();
-                });
-                input.click();
+                setCurrentIndex(currentIndex - 1);
               }
-            } else if (gameState === state.SHOWSTAT) {
-              setGameState(state.GAME);
-            }
-          }}
-        >
-          {gameState === state.GAME ? '💉' : '👊'}
-        </button>
-        <button
-          type="button"
-          className="w-8 h-8 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
-          onClick={() => {
-            if (gameState === state.GAME) {
-              setGameState(state.SHOWSTAT);
-            } else if (gameState === state.SHOWSTAT) {
-              setGameState(state.GAME);
-            } else {
-              setCurrentIndex(currentIndex + 1);
-            }
-          }}
-        >
-          {gameState === state.GAME ? '💪' : '👉'}
-        </button>
+            }}
+          >
+            {gameState === state.GAME ? '👶' : '👈'}
+          </button>
+          <button
+            type="button"
+            className="w-8 h-8 mt-2 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
+            onClick={() => {
+              if (gameState === state.GAME) {
+                gotchiStat?.id && handleInjectGotchi(gotchiStat.id);
+              } else if (gameState === state.LISTGOTCHI) {
+                if (currentIndex === 0) {
+                  setGameState(state.GAME);
+                } else if (currentIndex === 1) {
+                  setGameState(state.ADDGOTCHI);
+                } else {
+                  setGotchiStat(gotchiInfo[currentIndex - 2]);
+                  setGameState(state.GAME);
+                }
+              } else if (gameState === state.ADDGOTCHI) {
+                if (Math.abs(currentIndex % people.length) === 0) {
+                  setGameState(state.LISTGOTCHI);
+                } else {
+                  const input = document.createElement('INPUT');
+                  input.className = 'hidden';
+                  input.setAttribute('type', 'file');
+                  document.body.appendChild(input);
+
+                  input.addEventListener('change', async () => {
+                    try {
+                      const node = await IPFS.create();
+                      const results = await node.add(input.files);
+                      const imagesUri = `https://ipfs.infura.io/ipfs/${results.path}`;
+                      handleProposeGotchi((currentIndex - 1).toString(), imagesUri);
+                    } catch (error) {
+                      alert('ใช้รูปซ้ำไม่ได้นะจ๊ะ');
+                    }
+                    input.remove();
+                  });
+                  input.click();
+                }
+              } else {
+                setGameState(state.GAME);
+              }
+            }}
+          >
+            {gameState === state.GAME ? '💉' : '👊'}
+          </button>
+          <button
+            type="button"
+            className="w-8 h-8 border-2 border-white bg-white rounded-full shadow-lg text-sm text-center transform active:scale-95"
+            onClick={() => {
+              if (gameState === state.GAME) {
+                setGameState(state.SHOWSTAT);
+              } else if (gameState === state.SHOWSTAT) {
+                setGameState(state.GAME);
+              } else {
+                setCurrentIndex(currentIndex + 1);
+              }
+            }}
+          >
+            {gameState === state.GAME ? '💪' : '👉'}
+          </button>
+        </div>
       </div>
     </div>
   );
