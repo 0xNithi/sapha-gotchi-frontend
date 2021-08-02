@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { utils, Contract } from 'ethers';
-import { useEthers, useContractCall, useContractCalls, shortenAddress } from '@usedapp/core';
+import { useEthers, useContractCall, useContractCalls } from '@usedapp/core';
 import IPFS from 'ipfs-core';
 
 import useTokenURI from '../../hooks/useTokenURI';
 import GotchiNFTAbi from '../../abis/GotchiNFT.json';
 import Crack from './Crack';
+import Screen from './Screen';
 
 const gotchiNFTInterface = new utils.Interface(GotchiNFTAbi);
 
@@ -25,10 +26,8 @@ const eggColor = [
   'bg-gradient-to-tl from-gray-800 to-gray-300',
 ];
 
-const rarity = ['common', 'rare', 'epic'];
-
 const Tamagotchi = () => {
-  const { activateBrowserWallet, library, account } = useEthers();
+  const { library, account } = useEthers();
   const [gameState, setGameState] = useState(state.GAME);
   const [gotchiSize, setGotchiSize] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(1);
@@ -107,6 +106,14 @@ const Tamagotchi = () => {
     }
   }, [currentIndex, gotchiSize, gameState]);
 
+  const propsScreen = {
+    gameState,
+    gotchiUri,
+    currentIndex,
+    tokenURI,
+    stat,
+  };
+
   return (
     <div>
       <div className="flex flex-row text-8xl justify-center mt-6 filter drop-shadow-xl">
@@ -128,61 +135,7 @@ const Tamagotchi = () => {
         </div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <Crack />
-          {/* Screen */}
-          <div className="w-48 h-44 flex flex-col relative bg-gray-100 rounded-2xl shadow border-y-2">
-            <div className="h-16 flex justify-center items-center text-base text-center bg-gray-200">
-              {account ? (
-                shortenAddress(account)
-              ) : (
-                <button
-                  type="button"
-                  className="bg-gray-500 text-white font-bold p-1 rounded transform active:scale-95"
-                  onClick={() => {
-                    activateBrowserWallet();
-                  }}
-                >
-                  Connect Wallet
-                </button>
-              )}
-            </div>
-            <div className="w-full h-full flex justify-center items-center">
-              {account && gotchiUri && (
-                <img src={gotchiUri} alt="character" className="w-20 h-20 object-cover filter grayscale animate-walk" />
-              )}
-              {account && gameState !== state.GAME && (
-                <div className="w-10/12 h-1/2 absolute flex flex-col justify-center items-center text-3xl bg-gray-300 rounded">
-                  {gameState === state.LISTGOTCHI && (
-                    <>
-                      {currentIndex === 0 && '×'}
-                      {currentIndex === 1 && '+'}
-                      {currentIndex !== 0 && currentIndex !== 1 && tokenURI && (
-                        <img src={tokenURI[0]} alt="character" className="w-16 h-16 object-cover filter grayscale" />
-                      )}
-                    </>
-                  )}
-                  {gameState === state.ADDGOTCHI && (
-                    <>{people[Math.abs(currentIndex % people.length)].toLocaleUpperCase()}</>
-                  )}
-                  {gameState === state.SHOWSTAT && (
-                    <>
-                      <div className="w-10/12 flex flex-row justify-between text-xs">
-                        <div>Power: </div>
-                        <div>{stat?.power.toString()}</div>
-                      </div>
-                      <div className="w-10/12 flex flex-row justify-between text-xs">
-                        <div>Sinovac taked:</div>
-                        <div>{stat?.sinovacTaked.toString()}</div>
-                      </div>
-                      <div className="w-10/12 flex flex-row justify-between text-xs mt-4">
-                        <div>Rarity:</div>
-                        <div>{rarity[stat?.rarity]}</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+          <Screen {...propsScreen} />
         </div>
         <div className="w-full absolute bottom-6 flex justify-center space-x-4">
           <button
