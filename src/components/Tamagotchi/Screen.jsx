@@ -1,16 +1,7 @@
 import React from 'react';
 import { shortenAddress, useEthers } from '@usedapp/core';
 
-const state = {
-  GAME: 0,
-  LISTGOTCHI: 1,
-  ADDGOTCHI: 2,
-  SHOWSTAT: 3,
-};
-
-const people = ['×', 'prawit', 'prayut', 'anutin'];
-
-const rarity = ['common', 'rare', 'epic'];
+import { people, rarity, gamestate as state } from '../../config/constant';
 
 const Screen = (props) => {
   const { activateBrowserWallet, account } = useEthers();

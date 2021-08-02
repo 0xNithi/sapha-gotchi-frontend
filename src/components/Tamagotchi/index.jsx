@@ -4,20 +4,12 @@ import { useEthers, useContractCall, useContractCalls } from '@usedapp/core';
 import IPFS from 'ipfs-core';
 
 import useTokenURI from '../../hooks/useTokenURI';
-import GotchiNFTAbi from '../../abis/GotchiNFT.json';
+import GotchiNFTAbi from '../../config/abis/GotchiNFT.json';
+import { address, gamestate as state } from '../../config/constant';
 import Crack from './Crack';
 import Screen from './Screen';
 
 const gotchiNFTInterface = new utils.Interface(GotchiNFTAbi);
-
-const address = '0x38A656369d17482083Bc80946171263BaCB5AD3e';
-
-const state = {
-  GAME: 0,
-  LISTGOTCHI: 1,
-  ADDGOTCHI: 2,
-  SHOWSTAT: 3,
-};
 
 const people = ['×', 'prawit', 'prayut', 'anutin'];
 const eggColor = [
